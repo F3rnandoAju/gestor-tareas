@@ -1,0 +1,29 @@
+:root {
+  --color-fondo: #ffffff;
+  --color-header: #0d6efd;
+  --color-footer: #212529;
+  --color-principal: #0d6efd;
+  --color-boton: #0d6efd;
+  --color-texto: #000000;
+  --color-pendiente: #ff7f07;
+  --color-en-progreso: #0d6efd;
+  --color-completada: #198754;
+}
+
+/* General */
+body { background-color: var(--color-fondo); color: var(--color-texto); }
+header { background-color: var(--color-header); color: #fff; padding: 1rem; }
+footer { background-color: var(--color-footer); color: #fff; padding: 1rem; }
+
+/* Tareas */
+.tarea-card { border-left: 6px solid var(--color-principal); background-color: var(--color-fondo); color: var(--color-texto); transition: all 0.3s; }
+.tarea-pendiente { border-left-color: var(--color-pendiente); }
+.tarea-en-progreso { border-left-color: var(--color-en-progreso); }
+.tarea-completada { border-left-color: var(--color-completada); opacity: 0.95; }
+
+/* Botones */
+.btn-primary { background-color: var(--color-boton); border-color: var(--color-boton); }
+
+/* Animaciones */
+.fade-in { animation: fadeIn 0.5s ease-in; }
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }

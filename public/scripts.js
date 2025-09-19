@@ -76,6 +76,11 @@ $(document).ready(function(){
           <button class="btn btn-sm btn-outline-success btn-ok" data-id="${t.id || ''}">Completada</button>
           <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id || ''}">Revocar</button>
         `;
+      }else if(estado === 'completada'){
+        botones = `
+                   <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id || ''}">Eliminar</button>
+
+        `;
       }
 
       return `
@@ -201,37 +206,83 @@ $(document).ready(function(){
     }).fail(()=>showAlert('Error al obtener tarea','danger'));
   });
 
-  // ================== CAMBIOS DE ESTADO ==================
-  // Función genérica para cambiar estado de una tarea
-  function updateTaskStatus(id, nuevoEstado, mensaje){
-    if(!id) return;
-    $.get(apiUrl, { action: 'get', id: id })
-      .done(res=>{
-        if(!res.success || !res.data){ showAlert('No se encontró la tarea','danger'); return; }
-        const t = res.data;
-        const payload = {
-          id: id,
-          titulo: t.titulo || '',
-          descripcion: t.descripcion || '',
-          fecha_limite: t.fecha_limite || null,
-          estado: nuevoEstado
-        };
-        $.ajax({
-          url: apiUrl+'?action=update',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify(payload)
-        }).done(res2=>{
-          if(res2.success){ showAlert(mensaje,'success'); fetchTasks(); }
-          else showAlert(res2.error || 'Error al actualizar tarea','danger');
-        }).fail(()=> showAlert('Error de red','danger'));
-      }).fail(()=> showAlert('Error al obtener tarea','danger'));
-  }
+// ================== CAMBIOS DE ESTADO ==================
+function updateTaskCardStatus($card, nuevoEstado, mensaje){
+  const id = $card.find('[data-id]').data('id');
+  if(!id) return;
 
-  // Botones que llaman a updateTaskStatus
-  $('#tasks').on('click','.btn-revision', function(){ updateTaskStatus($(this).data('id'), 'en revision', 'Tarea enviada a revisión'); });
-  $('#tasks').on('click','.btn-ok', function(){ updateTaskStatus($(this).data('id'), 'completada', 'Tarea marcada como completada'); });
-  $('#tasks').on('click','.btn-revocar', function(){ updateTaskStatus($(this).data('id'), 'pendiente', 'Tarea revocada a pendiente'); });
+  $.ajax({
+    url: apiUrl + '?action=update',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ id: id, estado: nuevoEstado })
+  })
+  .done(res=>{
+    if(res && res.success){
+      showAlert(mensaje,'success');
+
+      // Actualizar el estado en memoria
+      const tarea = allTasks.find(t => t.id === id);
+      if(tarea){
+        tarea.estado = nuevoEstado;
+        renderTasks(allTasks); // re-renderizo TODAS las tarjetas, así se mueve de sección
+      }
+
+    } else {
+      showAlert((res && res.error) || 'Error al actualizar','danger');
+    }
+  })
+  .fail(()=> showAlert('Error de red','danger'));
+}
+
+
+// ================== FUNCION PARA MOVER TARJETA ==================
+function moveCardToSection($card, estado){
+  const $col = $card.closest('.col-12'); // el div que envuelve la tarjeta
+  $col.detach(); // quitar temporalmente
+
+  let container;
+  if(estado==='pendiente'){
+    container = $('#tasks').find('h5:contains("Pendientes")').next('.row');
+    if(!container.length){
+      $('#tasks').append('<h5 class="mt-4 text-center">Pendientes</h5><div class="row"></div>');
+      container = $('#tasks').find('h5:contains("Pendientes")').next('.row');
+    }
+  }
+  if(estado==='en revision'){
+    container = $('#tasks').find('h5:contains("En Revisión")').next('.row');
+    if(!container.length){
+      $('#tasks').append('<h5 class="mt-4 text-center">En Revisión</h5><div class="row"></div>');
+      container = $('#tasks').find('h5:contains("En Revisión")').next('.row');
+    }
+  }
+  if(estado==='completada'){
+    container = $('#tasks').find('h5:contains("Completadas")').next('.row');
+    if(!container.length){
+      $('#tasks').append('<h5 class="mt-4 text-center text-muted">Completadas</h5><div class="row"></div>');
+      container = $('#tasks').find('h5:contains("Completadas")').next('.row');
+    }
+  }
+  container.append($col); // agregar la tarjeta a la sección
+}
+
+// ================== BOTONES ==================
+$('#tasks').on('click', '.btn-revision', function(){
+  const $card = $(this).closest('.card');
+  updateTaskCardStatus($card, 'en revision', 'Tarea enviada a revisión');
+});
+
+$('#tasks').on('click', '.btn-ok', function(){
+  const $card = $(this).closest('.card');
+  updateTaskCardStatus($card, 'completada', 'Tarea marcada como completada');
+});
+
+$('#tasks').on('click', '.btn-revocar', function(){
+  const $card = $(this).closest('.card');
+  updateTaskCardStatus($card, 'pendiente', 'Tarea revocada a pendiente');
+});
+
+
 
   // ================== ELIMINAR ==================
   $('#tasks').on('click','.btn-delete', function(){

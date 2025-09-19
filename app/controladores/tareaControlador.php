@@ -57,40 +57,45 @@ try {
         exit;
     }
 
-    // -------- ACTUALIZAR --------
-    // POST/PUT + action=update → modifica tarea existente
-    if(($method==='POST' || $method==='PUT') && $path==='update'){
-        $id = (int)($input['id'] ?? 0);
-        if(!$id){
-            http_response_code(422);
-            echo json_encode(['success'=>false,'error'=>'ID inválido']);
-            exit;
-        }
-
-        $titulo = trim($input['titulo'] ?? '');
-        $descripcion = trim($input['descripcion'] ?? '');
-        $fecha_limite = trim($input['fecha_limite'] ?? '');
-
-        // Validación: no se permite vacío
-        if($titulo==='' || $descripcion==='' || $fecha_limite===''){
-            http_response_code(422);
-            echo json_encode(['success'=>false,'error'=>'Todos los campos son obligatorios']);
-            exit;
-        }
-
-        // Me aseguro de no pisar el estado → se conserva el actual
-        $tarea = $model->obtener($id);
-        if(!$tarea){
-            http_response_code(404);
-            echo json_encode(['success'=>false,'error'=>'Tarea no encontrada']);
-            exit;
-        }
-        $estadoActual = $tarea['estado'];
-
-        $success = $model->actualizar($id, $titulo, $descripcion, $estadoActual, $fecha_limite);
-        echo json_encode(['success'=>$success]);
+// -------- ACTUALIZAR --------
+// POST/PUT + action=update → modifica tarea existente
+if(($method==='POST' || $method==='PUT') && $path==='update'){
+    $id = (int)($input['id'] ?? 0);
+    if(!$id){
+        http_response_code(422);
+        echo json_encode(['success'=>false,'error'=>'ID inválido']);
         exit;
     }
+
+    // Traigo tarea actual
+    $tarea = $model->obtener($id);
+    if(!$tarea){
+        http_response_code(404);
+        echo json_encode(['success'=>false,'error'=>'Tarea no encontrada']);
+        exit;
+    }
+
+    // Solo actualizar estado si viene en el payload, sino conservar actual
+    $estado = in_array($input['estado'] ?? '', ['pendiente','en revision','completada']) 
+              ? $input['estado'] 
+              : $tarea['estado'];
+              
+    $titulo = trim($input['titulo'] ?? $tarea['titulo']);
+    $descripcion = trim($input['descripcion'] ?? $tarea['descripcion']);
+    $fecha_limite = trim($input['fecha_limite'] ?? $tarea['fecha_limite']);
+
+    // Validación rápida: título, descripción y fecha no pueden estar vacíos
+    if($titulo==='' || $descripcion==='' || $fecha_limite===''){
+        http_response_code(422);
+        echo json_encode(['success'=>false,'error'=>'Todos los campos son obligatorios']);
+        exit;
+    }
+
+    $success = $model->actualizar($id, $titulo, $descripcion, $estado, $fecha_limite);
+    echo json_encode(['success'=>$success]);
+    exit;
+}
+
 // NO TOCAR ESTO FUNCIONA
     // -------- ELIMINAR --------
     // DELETE o POST + action=delete → borra por id

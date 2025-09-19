@@ -63,11 +63,7 @@
         <div class="row g-2">
           <!-- Cada input es un color editable -->
           <div class="col-md-3"><label>Fondo</label><input type="color" id="colorFondo" value="#ffffff" class="form-control form-control-color"></div>
-          <div class="col-md-3"><label>Texto</label><input type="color" id="colorTexto" value="#000000" class="form-control form-control-color"></div>
-          <div class="col-md-3"><label>Header</label><input type="color" id="colorHeader" value="#0d6efd" class="form-control form-control-color"></div>
-          <div class="col-md-3"><label>Footer</label><input type="color" id="colorFooter" value="#212529" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Botones</label><input type="color" id="colorBoton" value="#0d6efd" class="form-control form-control-color"></div>
-          <div class="col-md-3"><label>Color principal</label><input type="color" id="colorPrincipal" value="#0d6efd" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Pendiente</label><input type="color" id="colorPendiente" value="#ff7f07" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Completada</label><input type="color" id="colorCompletada" value="#198754" class="form-control form-control-color"></div>
                   <div class="col-md-3"><label>Revision</label><input type="color" id="revision" value="#226fe2" class="form-control form-control-color"></div>

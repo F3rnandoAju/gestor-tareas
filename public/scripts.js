@@ -310,7 +310,6 @@ $('#tasks').on('click', '.btn-revocar', function(){
   {var:'--color-texto', id:'#colorTexto'},
   {var:'--color-header', id:'#colorHeader'},
   {var:'--color-footer', id:'#colorFooter'},
-  {var:'--color-boton', id:'#colorBoton'},
   {var:'--color-principal', id:'#colorPrincipal'},
   {var:'--color-pendiente', id:'#colorPendiente'},
   {var:'--revision', id:'#revision'},

@@ -50,8 +50,8 @@ Aplicación web para gestionar tareas con estados (pendiente, en revisión, comp
 
 ##  Estado actual
 
-✅ CRUD de tareas funcional
-✅ Sistema de estados (pendiente, en revisión, completada)
-✅ Personalización de colores desde la interfaz
-✅ Buscador de tareas en tiempo real
+*✅ CRUD de tareas funcional
+*✅ Sistema de estados (pendiente, en revisión, completada)
+*✅ Personalización de colores desde la interfaz
+*✅ Buscador de tareas en tiempo real
 

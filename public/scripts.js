@@ -1,11 +1,19 @@
 $(document).ready(function(){
   const apiUrl = '../app/controladores/tareaControlador.php';
+  let allTasks = []; // 🔹 guardamos todas las tareas para el buscador
 
   // ----------------- ALERTAS -----------------
   function showAlert(msg, type='success') {
-    const el = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`);
-    $('.container').first().prepend(el);
-    setTimeout(()=> el.alert('close'), 4000);
+    try {
+      const el = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                      ${msg}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`);
+      $('.container').first().prepend(el);
+      setTimeout(()=> el.alert('close'), 4000);
+    } catch(e) {
+      console.error("Error mostrando alerta:", e);
+    }
   }
 
   // ----------------- FETCH Y RENDER TAREAS -----------------
@@ -13,147 +21,180 @@ $(document).ready(function(){
     $('#tasks').html('<div class="text-center p-4">Cargando...</div>');
     $.get(apiUrl, { action: 'list' })
       .done(res => {
-        if(!res.success) { $('#tasks').html('<div class="text-danger">Error cargando tareas</div>'); return; }
-        renderTasks(res.data);
+        if(!res || typeof res !== "object" || !Array.isArray(res.data)) {
+          $('#tasks').html('<div class="text-danger">Respuesta inválida del servidor</div>');
+          return;
+        }
+        if(!res.success) { 
+          $('#tasks').html('<div class="text-danger">Error cargando tareas</div>'); 
+          return; 
+        }
+        allTasks = res.data || []; // 🔹 guardamos las tareas
+        renderTasks(allTasks);
       })
       .fail(()=> $('#tasks').html('<div class="text-danger">Error de red</div>'));
   }
 
-  function escapeHtml(text){ return $('<div>').text(text).html(); }
-
-  // Render de cada tarjeta según estado y fecha límite
-  function renderCard(t){
-    const estadoClass = t.estado==='pendiente' ? 'tarea-pendiente' :
-                        t.estado==='en revision' ? 'tarea-en-revision' :
-                        'tarea-completada';
-    const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${t.fecha_limite}</small>` : '';
-
-    let botones = '';
-    const hoy = new Date();
-    const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
-    const limitePasado = fechaLimite && fechaLimite < hoy;
-
-    if(t.estado === 'pendiente' && !limitePasado){
-      botones = `
-        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id}">Editar</button>
-        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id}">Eliminar</button>
-        <button class="btn btn-sm btn-outline-warning btn-revision" data-id="${t.id}">Mandar a Revisión</button>
-      `;
-    } else if(t.estado === 'en revision'){
-      botones = `
-        <button class="btn btn-sm btn-outline-success btn-ok" data-id="${t.id}">Completada</button>
-        <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id}">Revocar</button>
-      `;
-    }
-
-    return `<div class="col-md-6 col-lg-4 fade-in">
-      <div class="card tarea-card ${estadoClass} p-2">
-        <div class="card-body">
-          <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
-          <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
-          <p>${fecha}</p>
-          <div class="d-flex gap-2">
-            ${botones}
-            <div class="ms-auto"><span class="badge bg-secondary">${t.estado}</span></div>
-          </div>
-        </div>
-      </div>
-    </div>`;
+  function escapeHtml(text){ 
+    return $('<div>').text(text || "").html(); 
   }
 
-  // Render general con separadores por estado
+  // ----------------- RENDER TARJETA -----------------
+  function renderCard(t){
+    try {
+      if(!t || typeof t !== "object") return "";
+
+      const estado = t.estado ? t.estado.toLowerCase() : "pendiente";
+      const estadoClass = estado==='pendiente' ? 'tarea-pendiente' :
+                          estado==='en revision' ? 'tarea-en-revision' :
+                          'tarea-completada';
+
+      const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${escapeHtml(t.fecha_limite)}</small>` : '';
+
+      let botones = '';
+      const hoy = new Date();
+      const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
+      const limitePasado = fechaLimite && fechaLimite < hoy;
+
+      if(estado === 'pendiente' && !limitePasado){
+        botones = `
+          <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id || ''}">Editar</button>
+          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id || ''}">Eliminar</button>
+          <button class="btn btn-sm btn-outline-warning btn-revision" data-id="${t.id || ''}">Mandar a Revisión</button>
+        `;
+      } else if(estado === 'en revision'){
+        botones = `
+          <button class="btn btn-sm btn-outline-success btn-ok" data-id="${t.id || ''}">Completada</button>
+          <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id || ''}">Revocar</button>
+        `;
+      }
+
+      return `
+        <div class="col-12 col-md-4 mb-4">
+          <div class="card tarea-card ${estadoClass} p-2 fade-in">
+            <div class="card-body">
+              <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
+              <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
+              <p>${fecha}</p>
+              <div class="d-flex gap-2">
+                ${botones}
+                <div class="ms-auto"><span class="badge bg-secondary">${escapeHtml(estado)}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch(e) {
+      console.error("Error renderizando tarjeta:", e);
+      return "";
+    }
+  }
+
+  // ----------------- RENDER GENERAL -----------------
   function renderTasks(data){
-    if(!data.length){ 
-      $('#tasks').html('<div class="col-12"><div class="alert alert-info">No hay tareas. Crea la primera.</div></div>'); 
-      return; 
+    try {
+      if(!Array.isArray(data) || !data.length){ 
+        $('#tasks').html('<div class="alert alert-info">No hay tareas. Crea la primera.</div>'); 
+        return; 
+      }
+
+      const pendientes = data.filter(t => t && t.estado === 'pendiente');
+      const revision = data.filter(t => t && t.estado === 'en revision');
+      const completadas = data.filter(t => t && t.estado === 'completada');
+
+      let html = '';
+      if(pendientes.length){
+        html += `<h5 class="mt-4 text-center">Pendientes</h5><div class="row">`;
+        html += pendientes.map(t => renderCard(t)).join('');
+        html += `</div>`;
+      }
+
+      if(revision.length){
+        html += `<h5 class="mt-4 text-center">En Revisión</h5><div class="row">`;
+        html += revision.map(t => renderCard(t)).join('');
+        html += `</div>`;
+      }
+
+      if(completadas.length){
+        html += `<h5 class="mt-4 text-center text-muted">Completadas</h5><div class="row">`;
+        html += completadas.map(t => renderCard(t)).join('');
+        html += `</div>`;
+      }
+
+      $('#tasks').html(html);
+    } catch(e) {
+      console.error("Error renderizando tareas:", e);
+      $('#tasks').html('<div class="text-danger">Error mostrando tareas</div>');
     }
-
-    const pendientes = data.filter(t => t.estado === 'pendiente');
-    const revision = data.filter(t => t.estado === 'en revision');
-    const completadas = data.filter(t => t.estado === 'completada');
-
-    let html = '';
-
-    if(pendientes.length){
-      html += `<div class="col-12"><h5>Pendientes</h5></div>`;
-      html += pendientes.map(t => renderCard(t)).join('');
-    }
-
-    if(revision.length){
-      html += `<div class="col-12 mt-3"><h5>En Revisión</h5></div>`;
-      html += revision.map(t => renderCard(t)).join('');
-    }
-
-    if(completadas.length){
-      html += `<div class="col-12 mt-3"><hr><h5 class="text-center text-muted">Completadas</h5></div>`;
-      html += completadas.map(t => renderCard(t)).join('');
-    }
-
-    $('#tasks').html(html);
   }
 
   // ----------------- FORMULARIO -----------------
   $('#taskForm').on('submit', function(e){
     e.preventDefault();
-    const id = $('#taskId').val();
-    const payload = {
-      titulo: $('#titulo').val().trim(),
-      descripcion: $('#descripcion').val().trim(),
-      fecha_limite: $('#fecha_limite').val()
-    };
+    try {
+      const id = $('#taskId').val();
+      const payload = {
+        titulo: $('#titulo').val().trim(),
+        descripcion: $('#descripcion').val().trim(),
+        fecha_limite: $('#fecha_limite').val()
+      };
 
-    if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
+      if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
 
-    if(!id){
-      // CREACIÓN: siempre pendiente
-      payload.estado = 'pendiente';
-    } else {
-      // EDICIÓN: mantener estado
-      payload.estado = $('#estado').val();
-      payload.id = id;
-    }
-
-    const action = id ? 'update' : 'create';
-
-    $.ajax({
-      url: apiUrl+'?action='+action,
-      method:'POST',
-      contentType:'application/json',
-      data: JSON.stringify(payload)
-    }).done(res=>{
-      if(res.success){ 
-        showAlert(id?'Tarea actualizada':'Tarea creada'); 
-        resetForm(); 
-        fetchTasks(); 
+      if(!id){
+        payload.estado = 'pendiente';
       } else {
-        showAlert(res.error || 'Error','danger');
+        payload.estado = $('#estado').val();
+        payload.id = id;
       }
-    }).fail(()=> showAlert('Error de red','danger'));
+
+      const action = id ? 'update' : 'create';
+
+      $.ajax({
+        url: apiUrl+'?action='+action,
+        method:'POST',
+        contentType:'application/json',
+        data: JSON.stringify(payload)
+      }).done(res=>{
+        if(res && res.success){ 
+          showAlert(id?'Tarea actualizada':'Tarea creada'); 
+          resetForm(); 
+          fetchTasks(); 
+        } else {
+          showAlert((res && res.error) || 'Error','danger');
+        }
+      }).fail(()=> showAlert('Error de red','danger'));
+    } catch(e) {
+      console.error("Error en submit:", e);
+      showAlert('Error inesperado','danger');
+    }
   });
 
   $('#tasks').on('click','.btn-edit', function(){
     const id=$(this).data('id');
+    if(!id) return;
     $.get(apiUrl,{action:'get',id:id}).done(res=>{
-      if(!res.success){ showAlert('No se encontró la tarea','danger'); return; }
+      if(!res.success || !res.data){ showAlert('No se encontró la tarea','danger'); return; }
       const t=res.data;
-      $('#taskId').val(t.id); 
-      $('#titulo').val(t.titulo); 
-      $('#descripcion').val(t.descripcion);
-      $('#estado').val(t.estado); 
-      $('#fecha_limite').val(t.fecha_limite);
+      $('#taskId').val(t.id||''); 
+      $('#titulo').val(t.titulo||''); 
+      $('#descripcion').val(t.descripcion||'');
+      $('#estado').val(t.estado||'pendiente'); 
+      $('#fecha_limite').val(t.fecha_limite||'');
       $('html,body').animate({scrollTop:0},400);
     }).fail(()=>showAlert('Error al obtener tarea','danger'));
   });
 
   // ----------------- BOTONES DINÁMICOS -----------------
   function updateTaskStatus(id, nuevoEstado, mensaje){
+    if(!id) return;
     $.get(apiUrl, { action: 'get', id: id })
       .done(res=>{
-        if(!res.success){ showAlert('No se encontró la tarea','danger'); return; }
+        if(!res.success || !res.data){ showAlert('No se encontró la tarea','danger'); return; }
         const t = res.data;
         const payload = {
           id: id,
-          titulo: t.titulo,
+          titulo: t.titulo || '',
           descripcion: t.descripcion || '',
           fecha_limite: t.fecha_limite || null,
           estado: nuevoEstado
@@ -175,8 +216,9 @@ $(document).ready(function(){
   $('#tasks').on('click','.btn-revocar', function(){ updateTaskStatus($(this).data('id'), 'pendiente', 'Tarea revocada a pendiente'); });
 
   $('#tasks').on('click','.btn-delete', function(){
-    if(!confirm('¿Eliminar esta tarea?')) return;
     const id=$(this).data('id');
+    if(!id) return;
+    if(!confirm('¿Eliminar esta tarea?')) return;
     $.ajax({
       url: apiUrl+'?action=delete',
       method:'POST',
@@ -220,6 +262,24 @@ $(document).ready(function(){
       $(c.id).val(defaultColor);
       localStorage.setItem(c.var, defaultColor);
     });
+  });
+
+  // ----------------- BUSCADOR -----------------
+  $('#searchTask').on('input', function(){
+    try {
+      const term = ($(this).val() || "").toLowerCase();
+      if(!term) { 
+        renderTasks(allTasks); 
+        return; 
+      }
+      const filtered = allTasks.filter(t => {
+        if(!t || typeof t.titulo !== "string") return false;
+        return t.titulo.toLowerCase().includes(term);
+      });
+      renderTasks(filtered);
+    } catch(e) {
+      console.error("Error en buscador:", e);
+    }
   });
 
   // ----------------- INICIO -----------------

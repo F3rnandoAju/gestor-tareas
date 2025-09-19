@@ -6,24 +6,102 @@
   --color-boton: #0d6efd;
   --color-texto: #000000;
   --color-pendiente: #ff7f07;
-  --color-en-progreso: #0d6efd;
+  --color-en-revision: #0d6efd;
   --color-completada: #198754;
 }
 
 /* General */
-body { background-color: var(--color-fondo); color: var(--color-texto); }
-header { background-color: var(--color-header); color: #fff; padding: 1rem; }
-footer { background-color: var(--color-footer); color: #fff; padding: 1rem; }
+body {
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: var(--color-header);
+  color: #fff;
+  padding: 1rem 0.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+footer {
+  background-color: var(--color-footer);
+  color: #fff;
+  padding: 2rem 0.5rem;
+}
 
 /* Tareas */
-.tarea-card { border-left: 6px solid var(--color-principal); background-color: var(--color-fondo); color: var(--color-texto); transition: all 0.3s; }
-.tarea-pendiente { border-left-color: var(--color-pendiente); }
-.tarea-en-progreso { border-left-color: var(--color-en-progreso); }
-.tarea-completada { border-left-color: var(--color-completada); opacity: 0.95; }
+#tasks {
+  margin-top: 2rem;
+}
+
+#tasks h5 {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+#tasks .tarea-card {
+  margin: 0; /* se controlará con gap */
+}
+
+.tarea-card {
+  border-left: 6px solid var(--color-principal);
+  background-color: hsla(0, 0%, 100%, 0.848); /* Fondo más claro para completadas */
+  color: var(--color-texto);
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+  padding: 1rem;
+}
+
+.tarea-card:hover {
+  transform: translateY(-3px);
+}
+
+.tarea-pendiente {
+ border-left-color: var(--color-pendiente);
+  background-color: #f4f1e6; /* Fondo más claro para completadas */
+  opacity: 0.95;}
+
+.tarea-en-revision {
+ border-left-color: var(--color-en-revision);
+  background-color: #7fadfcd8; /* Fondo más claro para completadas */
+  opacity: 0.95;}
+
+.tarea-completada {
+  border-left-color: var(--color-completada);
+  background-color: #e6f4ea; /* Fondo más claro para completadas */
+  opacity: 0.95;
+}
 
 /* Botones */
-.btn-primary { background-color: var(--color-boton); border-color: var(--color-boton); }
+.btn-primary {
+  background-color: var(--color-boton);
+  border-color: var(--color-boton);
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: darken(var(--color-boton), 10%);
+  border-color: darken(var(--color-boton), 10%);
+}
 
 /* Animaciones */
-.fade-in { animation: fadeIn 0.5s ease-in; }
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Personalización panel */
+#themePanel .form-control-color {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0;
+  border-radius: 0.25rem;
+}

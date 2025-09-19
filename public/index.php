@@ -8,13 +8,43 @@
   <link href="estilos.css" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER -->
-  <header class="mb-4 shadow-sm">
-    <div class="container d-flex justify-content-between align-items-center">
-      <h1 class="mb-0">Gestor de Tareas - Software Factory</h1>
-      <button id="toggleThemePanel" class="btn btn-light btn-sm">🎨 Personalizar Tema</button>
+<!-- HEADER -->
+<header class="shadow-sm bg-white sticky-top">
+  <div class="container d-flex justify-content-between align-items-center py-3">
+    
+    <!-- Logo estilo Sigel -->
+    <div class="d-flex align-items-center">
+      <div class="logo-icon bg-primary text-white fw-bold d-flex justify-content-center align-items-center me-2">
+        SF
+      </div>
+      <h2 class="mb-0 fw-bold text-dark">Software Factory</h2>
     </div>
-  </header>
+
+ 
+
+    <!-- Botones -->
+    <div class="d-flex align-items-center">
+      <button id="toggleThemePanel" class="btn btn-outline-secondary btn-sm me-2">
+        🎨 Personalizar
+      </button>
+      <a href="#" class="btn btn-primary btn-sm">
+        🚀 Nueva Tarea
+      </a>
+    </div>
+
+  </div>
+</header>
+
+<!-- CSS extra -->
+<style>
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px; /* Bordes suaves tipo Sigel */
+    font-size: 18px;
+  }
+</style>
+
 
   <!-- PANEL DE PERSONALIZACIÓN (oculto por defecto) -->
   <div class="container py-4" id="themePanel" style="display:none;">
@@ -40,74 +70,126 @@
   </div>
 
   <!-- FORMULARIO DE TAREAS -->
-  <div class="container py-4">
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <form id="taskForm">
-          <input type="hidden" id="taskId" name="id" value="">
-          <div class="mb-3">
-            <label for="titulo" class="form-label">Título</label>
-            <input type="text" class="form-control" id="titulo" name="titulo" required>
+<div class="container py-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-primary text-white rounded-top-4">
+      <h5 class="mb-0"><i class="bi bi-journal-plus me-2"></i> Nueva Tarea</h5>
+    </div>
+    <div class="card-body p-4">
+      <form id="taskForm">
+        <input type="hidden" id="taskId" name="id" value="">
+        
+        <!-- Título -->
+        <div class="mb-3">
+          <label for="titulo" class="form-label fw-semibold">Título</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-pencil"></i></span>
+            <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Ej: Implementar login" required>
           </div>
-          <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
+        </div>
+        
+        <!-- Descripción -->
+        <div class="mb-3">
+          <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-card-text"></i></span>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" placeholder="Detalles de la tarea..."></textarea>
           </div>
-          <div class="row">
-            
-            <div class="col-md-4 mb-3">
-              <label for="fecha_limite" class="form-label">Fecha límite</label>
+        </div>
+        
+        <!-- Fecha límite + Botón -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="fecha_limite" class="form-label fw-semibold">Fecha límite</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
               <input type="date" id="fecha_limite" name="fecha_limite" class="form-control">
             </div>
-            <div class="col-md-4 d-flex align-items-end mb-3">
-              <button class="btn btn-primary w-100" id="saveBtn">Guardar tarea</button>
-            </div>
           </div>
-        </form>
-      </div>
+          
+          <div class="col-md-6 d-flex align-items-end mb-3">
+            <button class="btn btn-success w-100 d-flex align-items-center justify-content-center" id="saveBtn">
+              <i class="bi bi-check-circle me-2"></i> Guardar tarea
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
+  </div>
+</div>
 
-    <!-- CONTENEDOR DE TAREAS -->
-    <div id="tasks" class="row g-3"></div>
+<!-- Bootstrap Icons (si no las tienes inclúyelas en tu <head>) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<div class="container mt-3">
+  <input type="text" id="searchTask" class="form-control" placeholder="🔍 Buscar tarea por título...">
+</div>
+
+ <div id="tasks" class="row g-3">
+  <!-- Pendientes -->
+  <div class="col-md-4">
+    <h5 class="text-center">Pendientes</h5>
+    <div id="pendientes" class="d-flex flex-column gap-3"></div>
   </div>
 
+  <!-- En revisión -->
+  <div class="col-md-4">
+    <h5 class="text-center">En Revisión</h5>
+    <div id="revision" class="d-flex flex-column gap-3"></div>
+  </div>
+
+  <!-- Completadas -->
+  <div class="col-md-4">
+    <h5 class="text-center">Completadas</h5>
+    <div id="completadas" class="d-flex flex-column gap-3"></div>
+  </div>
+</div>
+
+
 <!-- FOOTER COMPLETO -->
-<footer class="mt-4 bg-dark text-light pt-5 pb-3">
+<footer class="mt-5 bg-dark text-light pt-5 pb-4">
   <div class="container">
-    <div class="row">
+    <div class="row text-center text-md-start">
+      
       <!-- Información de la empresa -->
-      <div class="col-md-4 mb-3">
-        <h5>Software Factory</h5>
-        <p>Gestor de Tareas Personalizable.<br>Soluciones web modernas y eficientes para tu equipo.</p>
+      <div class="col-md-4 mb-4">
+        <h5 class="fw-bold">Software Factory</h5>
+        <p class="small">
+          Gestor de Tareas Personalizable.<br>
+          Soluciones web modernas y eficientes para tu equipo.
+        </p>
       </div>
 
       <!-- Enlaces rápidos -->
-      <div class="col-md-4 mb-3">
-        <h5>Enlaces Rápidos</h5>
+      <div class="col-md-4 mb-4">
+        <h5 class="fw-bold">Enlaces Rápidos</h5>
         <ul class="list-unstyled">
-          <li><a href="#" class="text-light text-decoration-none">Inicio</a></li>
-          <li><a href="#" class="text-light text-decoration-none">Acerca de</a></li>
-          <li><a href="#" class="text-light text-decoration-none">Soporte</a></li>
-          <li><a href="#" class="text-light text-decoration-none">Contacto</a></li>
+          <li><a href="#" class="text-light text-decoration-none d-block py-1">Inicio</a></li>
+          <li><a href="#" class="text-light text-decoration-none d-block py-1">Acerca de</a></li>
+          <li><a href="#" class="text-light text-decoration-none d-block py-1">Soporte</a></li>
+          <li><a href="#" class="text-light text-decoration-none d-block py-1">Contacto</a></li>
         </ul>
       </div>
 
       <!-- Redes sociales -->
-      <div class="col-md-4 mb-3">
-        <h5>Síguenos</h5>
-        <a href="#" class="text-light me-2"><i class="bi bi-facebook"></i> Facebook</a><br>
-        <a href="#" class="text-light me-2"><i class="bi bi-twitter"></i> Twitter</a><br>
-        <a href="#" class="text-light me-2"><i class="bi bi-linkedin"></i> LinkedIn</a><br>
-        <a href="#" class="text-light"><i class="bi bi-github"></i> GitHub</a>
+      <div class="col-md-4 mb-4">
+        <h5 class="fw-bold">Síguenos</h5>
+        <div class="d-flex justify-content-center justify-content-md-start gap-3">
+          <a href="#" class="text-light fs-5"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="text-light fs-5"><i class="bi bi-twitter"></i></a>
+          <a href="#" class="text-light fs-5"><i class="bi bi-linkedin"></i></a>
+          <a href="#" class="text-light fs-5"><i class="bi bi-github"></i></a>
+        </div>
       </div>
+
     </div>
 
     <hr class="border-light">
-    <div class="text-center">
-      <p class="mb-0">&copy; 2025 Software Factory. Todos los derechos reservados.</p>
+    <div class="text-center small">
+      <p class="mb-0">&copy; 2025 <strong>Software Factory</strong>. Todos los derechos reservados.</p>
     </div>
   </div>
 </footer>
+
 
 <!-- Para los íconos de redes sociales (Bootstrap Icons) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">

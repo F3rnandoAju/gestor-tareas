@@ -21,7 +21,7 @@ try {
         $titulo=trim($input['titulo']??'');
         if($titulo===''){http_response_code(422); echo json_encode(['success'=>false,'error'=>'El título es obligatorio']); exit;}
         $descripcion=$input['descripcion']??'';
-        $estado=in_array($input['estado']??'pendiente',['pendiente','en progreso','completada'])?$input['estado']:'pendiente';
+        $estado=in_array($input['estado']??'pendiente',['pendiente','en revision','completada'])?$input['estado']:'pendiente';
         $fecha_limite=$input['fecha_limite']??null;
         $id=$model->crear($titulo,$descripcion,$estado,$fecha_limite);
         echo json_encode(['success'=>true,'id'=>$id]); exit;
@@ -33,7 +33,7 @@ try {
         $titulo=trim($input['titulo']??'');
         if($titulo===''){http_response_code(422); echo json_encode(['success'=>false,'error'=>'El título es obligatorio']); exit;}
         $descripcion=$input['descripcion']??'';
-        $estado=in_array($input['estado']??'pendiente',['pendiente','en progreso','completada'])?$input['estado']:'pendiente';
+        $estado=in_array($input['estado']??'pendiente',['pendiente','en revision','completada'])?$input['estado']:'pendiente';
         $fecha_limite=$input['fecha_limite']??null;
         echo json_encode(['success'=>$model->actualizar($id,$titulo,$descripcion,$estado,$fecha_limite)]);
         exit;

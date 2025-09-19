@@ -54,14 +54,7 @@
             <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
           </div>
           <div class="row">
-            <div class="col-md-4 mb-3">
-              <label for="estado" class="form-label">Estado</label>
-              <select id="estado" name="estado" class="form-select">
-                <option value="pendiente">Pendiente</option>
-                <option value="en progreso">En progreso</option>
-                <option value="completada">Completada</option>
-              </select>
-            </div>
+            
             <div class="col-md-4 mb-3">
               <label for="fecha_limite" class="form-label">Fecha límite</label>
               <input type="date" id="fecha_limite" name="fecha_limite" class="form-control">

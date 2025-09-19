@@ -19,31 +19,78 @@ $(document).ready(function(){
       .fail(()=> $('#tasks').html('<div class="text-danger">Error de red</div>'));
   }
 
-  function renderTasks(data){
-    if(!data.length){ $('#tasks').html('<div class="col-12"><div class="alert alert-info">No hay tareas. Crea la primera.</div></div>'); return; }
-    const html = data.map(t => {
-      const estadoClass = t.estado==='pendiente'?'tarea-pendiente':(t.estado==='en progreso'?'tarea-en-progreso':'tarea-completada');
-      const fecha = t.fecha_limite?`<small class="text-muted">Límite: ${t.fecha_limite}</small>`:'';
-      return `<div class="col-md-6 col-lg-4 fade-in">
-        <div class="card tarea-card ${estadoClass} p-2">
-          <div class="card-body">
-            <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
-            <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
-            <p>${fecha}</p>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id}">Editar</button>
-              <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id}">Eliminar</button>
-              <button class="btn btn-sm btn-outline-primary btn-ok" data-id="${t.id}">Completada</button>
-              <div class="ms-auto"><span class="badge bg-secondary">${t.estado}</span></div>
-            </div>
+  function escapeHtml(text){ return $('<div>').text(text).html(); }
+
+  // Render de cada tarjeta según estado y fecha límite
+  function renderCard(t){
+    const estadoClass = t.estado==='pendiente' ? 'tarea-pendiente' :
+                        t.estado==='en revision' ? 'tarea-en-revision' :
+                        'tarea-completada';
+    const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${t.fecha_limite}</small>` : '';
+
+    let botones = '';
+    const hoy = new Date();
+    const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
+    const limitePasado = fechaLimite && fechaLimite < hoy;
+
+    if(t.estado === 'pendiente' && !limitePasado){
+      botones = `
+        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id}">Editar</button>
+        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id}">Eliminar</button>
+        <button class="btn btn-sm btn-outline-warning btn-revision" data-id="${t.id}">Mandar a Revisión</button>
+      `;
+    } else if(t.estado === 'en revision'){
+      botones = `
+        <button class="btn btn-sm btn-outline-success btn-ok" data-id="${t.id}">Completada</button>
+        <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id}">Revocar</button>
+      `;
+    }
+
+    return `<div class="col-md-6 col-lg-4 fade-in">
+      <div class="card tarea-card ${estadoClass} p-2">
+        <div class="card-body">
+          <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
+          <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
+          <p>${fecha}</p>
+          <div class="d-flex gap-2">
+            ${botones}
+            <div class="ms-auto"><span class="badge bg-secondary">${t.estado}</span></div>
           </div>
         </div>
-      </div>`;
-    }).join('');
-    $('#tasks').html(html);
+      </div>
+    </div>`;
   }
 
-  function escapeHtml(text){ return $('<div>').text(text).html(); }
+  // Render general con separadores por estado
+  function renderTasks(data){
+    if(!data.length){ 
+      $('#tasks').html('<div class="col-12"><div class="alert alert-info">No hay tareas. Crea la primera.</div></div>'); 
+      return; 
+    }
+
+    const pendientes = data.filter(t => t.estado === 'pendiente');
+    const revision = data.filter(t => t.estado === 'en revision');
+    const completadas = data.filter(t => t.estado === 'completada');
+
+    let html = '';
+
+    if(pendientes.length){
+      html += `<div class="col-12"><h5>Pendientes</h5></div>`;
+      html += pendientes.map(t => renderCard(t)).join('');
+    }
+
+    if(revision.length){
+      html += `<div class="col-12 mt-3"><h5>En Revisión</h5></div>`;
+      html += revision.map(t => renderCard(t)).join('');
+    }
+
+    if(completadas.length){
+      html += `<div class="col-12 mt-3"><hr><h5 class="text-center text-muted">Completadas</h5></div>`;
+      html += completadas.map(t => renderCard(t)).join('');
+    }
+
+    $('#tasks').html(html);
+  }
 
   // ----------------- FORMULARIO -----------------
   $('#taskForm').on('submit', function(e){
@@ -52,12 +99,21 @@ $(document).ready(function(){
     const payload = {
       titulo: $('#titulo').val().trim(),
       descripcion: $('#descripcion').val().trim(),
-      estado: $('#estado').val(),
       fecha_limite: $('#fecha_limite').val()
     };
+
     if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
+
+    if(!id){
+      // CREACIÓN: siempre pendiente
+      payload.estado = 'pendiente';
+    } else {
+      // EDICIÓN: mantener estado
+      payload.estado = $('#estado').val();
+      payload.id = id;
+    }
+
     const action = id ? 'update' : 'create';
-    if(id) payload.id=id;
 
     $.ajax({
       url: apiUrl+'?action='+action,
@@ -65,8 +121,13 @@ $(document).ready(function(){
       contentType:'application/json',
       data: JSON.stringify(payload)
     }).done(res=>{
-      if(res.success){ showAlert(id?'Tarea actualizada':'Tarea creada'); resetForm(); fetchTasks(); }
-      else showAlert(res.error || 'Error','danger');
+      if(res.success){ 
+        showAlert(id?'Tarea actualizada':'Tarea creada'); 
+        resetForm(); 
+        fetchTasks(); 
+      } else {
+        showAlert(res.error || 'Error','danger');
+      }
     }).fail(()=> showAlert('Error de red','danger'));
   });
 
@@ -84,46 +145,34 @@ $(document).ready(function(){
     }).fail(()=>showAlert('Error al obtener tarea','danger'));
   });
 
-// ----------------- BOTÓN COMPLETADA -----------------
-$('#tasks').on('click','.btn-ok', function(){
-  const id = $(this).data('id');
+  // ----------------- BOTONES DINÁMICOS -----------------
+  function updateTaskStatus(id, nuevoEstado, mensaje){
+    $.get(apiUrl, { action: 'get', id: id })
+      .done(res=>{
+        if(!res.success){ showAlert('No se encontró la tarea','danger'); return; }
+        const t = res.data;
+        const payload = {
+          id: id,
+          titulo: t.titulo,
+          descripcion: t.descripcion || '',
+          fecha_limite: t.fecha_limite || null,
+          estado: nuevoEstado
+        };
+        $.ajax({
+          url: apiUrl+'?action=update',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify(payload)
+        }).done(res2=>{
+          if(res2.success){ showAlert(mensaje,'success'); fetchTasks(); }
+          else showAlert(res2.error || 'Error al actualizar tarea','danger');
+        }).fail(()=> showAlert('Error de red','danger'));
+      }).fail(()=> showAlert('Error al obtener tarea','danger'));
+  }
 
-  // Primero obtenemos los datos actuales de la tarea
-  $.get(apiUrl, { action: 'get', id: id })
-   .done(res => {
-      if(!res.success){ 
-        showAlert('No se encontró la tarea','danger'); 
-        return; 
-      }
-
-      const t = res.data;
-
-      // Payload completo para actualizar
-      const payload = {
-        id: id,
-        titulo: t.titulo,               // obligatorio
-        descripcion: t.descripcion || '',
-        fecha_limite: t.fecha_limite || null,
-        estado: 'completada'
-      };
-
-      $.ajax({
-        url: apiUrl+'?action=update',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(payload)
-      }).done(res2 => {
-        if(res2.success){
-          showAlert('Tarea marcada como completada','success');
-          fetchTasks(); // refresca la lista
-        } else {
-          showAlert(res2.error || 'Error al actualizar tarea','danger');
-        }
-      }).fail(()=> showAlert('Error de red','danger'));
-
-   }).fail(()=> showAlert('Error al obtener tarea','danger'));
-});
-
+  $('#tasks').on('click','.btn-revision', function(){ updateTaskStatus($(this).data('id'), 'en revision', 'Tarea enviada a revisión'); });
+  $('#tasks').on('click','.btn-ok', function(){ updateTaskStatus($(this).data('id'), 'completada', 'Tarea marcada como completada'); });
+  $('#tasks').on('click','.btn-revocar', function(){ updateTaskStatus($(this).data('id'), 'pendiente', 'Tarea revocada a pendiente'); });
 
   $('#tasks').on('click','.btn-delete', function(){
     if(!confirm('¿Eliminar esta tarea?')) return;
@@ -150,27 +199,26 @@ $('#tasks').on('click','.btn-ok', function(){
     {var:'--color-boton', id:'#colorBoton'},
     {var:'--color-principal', id:'#colorPrincipal'},
     {var:'--color-pendiente', id:'#colorPendiente'},
-    {var:'--color-en-progreso', id:'#colorEnProgreso'},
+    {var:'--color-en-revision', id:'#colorEnRevision'},
     {var:'--color-completada', id:'#colorCompletada'}
   ];
-
-  function cambiarColor(variable,color){ 
-    document.documentElement.style.setProperty(variable,color); 
-    localStorage.setItem(variable,color); 
-  }
 
   colores.forEach(c=>{
     const saved=localStorage.getItem(c.var);
     if(saved) document.documentElement.style.setProperty(c.var,saved);
-    $(c.id).val(saved || $(c.id).val()).on('input',function(){ cambiarColor(c.var,$(this).val()); });
+    $(c.id).val(saved || $(c.id).val()).on('input',function(){ 
+      document.documentElement.style.setProperty(c.var,$(this).val()); 
+      localStorage.setItem(c.var,$(this).val()); 
+    });
   });
 
   $('#toggleThemePanel').click(()=> $('#themePanel').slideToggle());
-  $('#resetColors').click(()=>{
+  $('#resetColors').click(()=>{ 
     colores.forEach(c=>{
       const defaultColor=$(c.id).attr('value');
-      cambiarColor(c.var,defaultColor);
+      document.documentElement.style.setProperty(c.var, defaultColor);
       $(c.id).val(defaultColor);
+      localStorage.setItem(c.var, defaultColor);
     });
   });
 

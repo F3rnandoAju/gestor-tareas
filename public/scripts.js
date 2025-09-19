@@ -129,46 +129,48 @@ $(document).ready(function(){
   }
 
   // ----------------- FORMULARIO -----------------
-  $('#taskForm').on('submit', function(e){
-    e.preventDefault();
-    try {
-      const id = $('#taskId').val();
-      const payload = {
-        titulo: $('#titulo').val().trim(),
-        descripcion: $('#descripcion').val().trim(),
-        fecha_limite: $('#fecha_limite').val()
-      };
+ $('#taskForm').on('submit', function(e){
+  e.preventDefault();
+  try {
+    const id = $('#taskId').val();
+    const payload = {
+      titulo: $('#titulo').val().trim(),
+      descripcion: $('#descripcion').val().trim(),
+      fecha_limite: $('#fecha_limite').val()
+    };
 
-      if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
+    if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
+    if(!payload.descripcion){ showAlert('La descripción es obligatoria','warning'); return; }
+    if(!payload.fecha_limite){ showAlert('La fecha límite es obligatoria','warning'); return; }
 
-      if(!id){
-        payload.estado = 'pendiente';
-      } else {
-        payload.estado = $('#estado').val();
-        payload.id = id;
-      }
-
-      const action = id ? 'update' : 'create';
-
-      $.ajax({
-        url: apiUrl+'?action='+action,
-        method:'POST',
-        contentType:'application/json',
-        data: JSON.stringify(payload)
-      }).done(res=>{
-        if(res && res.success){ 
-          showAlert(id?'Tarea actualizada':'Tarea creada'); 
-          resetForm(); 
-          fetchTasks(); 
-        } else {
-          showAlert((res && res.error) || 'Error','danger');
-        }
-      }).fail(()=> showAlert('Error de red','danger'));
-    } catch(e) {
-      console.error("Error en submit:", e);
-      showAlert('Error inesperado','danger');
+    let action = 'create';
+    if(id){ 
+      payload.id = id; 
+      action = 'update'; // ✅ no incluimos estado
+    } else {
+      payload.estado = 'pendiente'; // solo al crear
     }
-  });
+
+    $.ajax({
+      url: apiUrl+'?action='+action,
+      method:'POST',
+      contentType:'application/json',
+      data: JSON.stringify(payload)
+    }).done(res=>{
+      if(res && res.success){ 
+        showAlert(id?'Tarea actualizada':'Tarea creada'); 
+        resetForm(); 
+        fetchTasks(); 
+      } else {
+        showAlert((res && res.error) || 'Error','danger');
+      }
+    }).fail(()=> showAlert('Error de red','danger'));
+  } catch(e) {
+    console.error("Error en submit:", e);
+    showAlert('Error inesperado','danger');
+  }
+});
+
 
   $('#tasks').on('click','.btn-edit', function(){
     const id=$(this).data('id');

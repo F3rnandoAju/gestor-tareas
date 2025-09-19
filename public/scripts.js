@@ -305,17 +305,18 @@ $('#tasks').on('click', '.btn-revocar', function(){
 
   // ================== PERSONALIZACIÓN ==================
   // Colores configurables (se guardan en localStorage)
-  const colores = [
-    {var:'--color-fondo', id:'#colorFondo'},
-    {var:'--color-texto', id:'#colorTexto'},
-    {var:'--color-header', id:'#colorHeader'},
-    {var:'--color-footer', id:'#colorFooter'},
-    {var:'--color-boton', id:'#colorBoton'},
-    {var:'--color-principal', id:'#colorPrincipal'},
-    {var:'--color-pendiente', id:'#colorPendiente'},
-    {var:'--color-en-revision', id:'#colorEnRevision'},
-    {var:'--color-completada', id:'#colorCompletada'}
-  ];
+ const colores = [
+  {var:'--color-fondo', id:'#colorFondo'},
+  {var:'--color-texto', id:'#colorTexto'},
+  {var:'--color-header', id:'#colorHeader'},
+  {var:'--color-footer', id:'#colorFooter'},
+  {var:'--color-boton', id:'#colorBoton'},
+  {var:'--color-principal', id:'#colorPrincipal'},
+  {var:'--color-pendiente', id:'#colorPendiente'},
+  {var:'--revision', id:'#revision'},
+  {var:'--color-completada', id:'#colorCompletada'}
+];
+
 
   // Aplico los colores guardados
   colores.forEach(c=>{

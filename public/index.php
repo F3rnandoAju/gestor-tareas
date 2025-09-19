@@ -69,8 +69,9 @@
           <div class="col-md-3"><label>Botones</label><input type="color" id="colorBoton" value="#0d6efd" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Color principal</label><input type="color" id="colorPrincipal" value="#0d6efd" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Pendiente</label><input type="color" id="colorPendiente" value="#ff7f07" class="form-control form-control-color"></div>
-          <div class="col-md-3"><label>En progreso</label><input type="color" id="colorEnProgreso" value="#0d6efd" class="form-control form-control-color"></div>
           <div class="col-md-3"><label>Completada</label><input type="color" id="colorCompletada" value="#198754" class="form-control form-control-color"></div>
+                  <div class="col-md-3"><label>Revision</label><input type="color" id="revision" value="#226fe2" class="form-control form-control-color"></div>
+
         </div>
 
         <!-- Botón para resetear todo a colores por defecto -->
@@ -196,10 +197,8 @@
         <div class="col-md-4 mb-4">
           <h5 class="fw-bold">Síguenos</h5>
           <div class="d-flex justify-content-center justify-content-md-start gap-3">
-            <a href="#" class="text-light fs-5"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="text-light fs-5"><i class="bi bi-twitter"></i></a>
-            <a href="#" class="text-light fs-5"><i class="bi bi-linkedin"></i></a>
-            <a href="#" class="text-light fs-5"><i class="bi bi-github"></i></a>
+            <a href="https://www.facebook.com/SigelServ/" class="text-light fs-5"><i class="bi bi-facebook"></i></a>
+            <a href="https://gt.linkedin.com/company/sigel_servicios" class="text-light fs-5"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
       </div>

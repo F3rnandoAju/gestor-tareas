@@ -1,28 +1,57 @@
 # Gestor de Tareas - Empresa Web
 
-## Tecnologías
-- Backend: PHP (PDO)
-- Base de datos: MySQL (phpMyAdmin)
-- Frontend: HTML, CSS, Bootstrap 5, jQuery
+Aplicación web para gestionar tareas con estados (pendiente, en revisión, completada), personalización de colores y buscador integrado.
 
-Use estas tecnologias ya que son las que aprendi a lo largo de mi estadia en SIGEL y en mi institucion
+---
 
-## Instalación
-1. Clonar repo
-2. Importar SQL en phpMyAdmin (`empresa_web.sql`)
-3. Usar XAMPP
-4. Ajustar credenciales en `app/conexion.php` "O Dejarlas Por Defecto"
-5. Abrir `public/index.php` en navegador IP = "http://localhost/gestor-tareas/public/"
+## Tecnologías utilizadas
 
-## Endpoints
-- GET action=list
-- GET action=get&id={id}
-- POST action=create
-- POST action=update
-- POST action=delete
-  
-## Dificultades
-De las dificultades mas grandes que tuve , fue el desarrollo de las APIs ya que era algo nuevo para mi , conocia lo basico , sin envargo no como funcionaba a fondo ni como estructurarlas , pero me guie por un proyecto que tuve y con guia de tutoriales basicos.
+* **Backend:** PHP (PDO)
+* **Base de datos:** MySQL (phpMyAdmin)
+* **Frontend:** HTML, CSS, Bootstrap 5, jQuery
 
-Otra dificultad fue a la hora de los diseños ya que aparte del Estilo.css yo implemento estilos de JS de un solo en las casillas correspondientes es algo que ya tengo perfeccionado pero aun me sigo adaptando al 100%
+> Elegí estas tecnologías porque son las que aprendí durante mi estadía en **SIGEL** y en mi institución.
+
+---
+
+## Instalación y configuración
+
+1. **Clonar este repositorio** en tu carpeta de proyectos.
+2. **Importar la base de datos** con el archivo `empresa_web.sql` en **phpMyAdmin**.
+3. **Levantar XAMPP** (Apache + MySQL).
+4. Configurar las credenciales en `app/conexion.php` *(o dejar las que vienen por defecto)*.
+5. Abrir en el navegador:
+
+   ```
+   http://localhost/gestor-tareas/public/
+   ```
+
+---
+
+## Endpoints de la API
+
+* `GET  ?action=list` → Listar todas las tareas.
+* `GET  ?action=get&id={id}` → Obtener una tarea por su ID.
+* `POST ?action=create` → Crear una nueva tarea.
+* `POST ?action=update` → Actualizar una tarea existente.
+* `POST ?action=delete` → Eliminar una tarea.
+
+---
+
+## Dificultades encontradas
+
+* **APIs / Backend:**
+  Una de las mayores dificultades fue desarrollar las APIs. Conocía lo básico, pero no sabía cómo estructurarlas bien. Me apoyé en un proyecto anterior y en tutoriales básicos para lograrlo.
+
+* **Diseño / Frontend:**
+  También me costó la parte de los estilos. Además del archivo `estilos.css`, uso algunos estilos desde JS directamente en las casillas correspondientes. Es una técnica que ya manejo bastante bien, pero sigo adaptándome para perfeccionarla al 100%.
+
+---
+
+##  Estado actual
+
+✅ CRUD de tareas funcional
+✅ Sistema de estados (pendiente, en revisión, completada)
+✅ Personalización de colores desde la interfaz
+✅ Buscador de tareas en tiempo real
 

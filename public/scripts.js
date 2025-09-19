@@ -1,8 +1,13 @@
 $(document).ready(function(){
+  // Ruta del controlador PHP → cambiar si muevo las carpetas
   const apiUrl = '../app/controladores/tareaControlador.php';
-  let allTasks = []; // 🔹 guardamos todas las tareas para el buscador
 
-  // ----------------- ALERTAS -----------------
+  // Guardar todas las tareas en memoria (lo uso en el buscador)
+  let allTasks = []; 
+
+  // ================== ALERTAS ==================
+  // Mostrar un mensajito arriba. Se cierra solo en 4 seg.
+  // Usar para feedback rápido (crear, editar, error, etc.)
   function showAlert(msg, type='success') {
     try {
       const el = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -10,15 +15,17 @@ $(document).ready(function(){
                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>`);
       $('.container').first().prepend(el);
-      setTimeout(()=> el.alert('close'), 4000);
+      setTimeout(()=> el.alert('close'), 4000); 
     } catch(e) {
       console.error("Error mostrando alerta:", e);
     }
   }
 
-  // ----------------- FETCH Y RENDER TAREAS -----------------
+  // ================== CARGAR TAREAS ==================
+  // Pide todas las tareas al servidor y las pinta
   function fetchTasks(){
     $('#tasks').html('<div class="text-center p-4">Cargando...</div>');
+
     $.get(apiUrl, { action: 'list' })
       .done(res => {
         if(!res || typeof res !== "object" || !Array.isArray(res.data)) {
@@ -29,17 +36,18 @@ $(document).ready(function(){
           $('#tasks').html('<div class="text-danger">Error cargando tareas</div>'); 
           return; 
         }
-        allTasks = res.data || []; // 🔹 guardamos las tareas
+        allTasks = res.data || []; // guardar todo
         renderTasks(allTasks);
       })
       .fail(()=> $('#tasks').html('<div class="text-danger">Error de red</div>'));
   }
 
+  // Para evitar inyecciones raras (XSS)
   function escapeHtml(text){ 
     return $('<div>').text(text || "").html(); 
   }
 
-  // ----------------- RENDER TARJETA -----------------
+  // ================== RENDER UNA TAREA ==================
   function renderCard(t){
     try {
       if(!t || typeof t !== "object") return "";
@@ -51,6 +59,7 @@ $(document).ready(function(){
 
       const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${escapeHtml(t.fecha_limite)}</small>` : '';
 
+      // Botones que aparecen según el estado
       let botones = '';
       const hoy = new Date();
       const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
@@ -90,7 +99,8 @@ $(document).ready(function(){
     }
   }
 
-  // ----------------- RENDER GENERAL -----------------
+  // ================== RENDER GENERAL ==================
+  // Pinta todas las tareas separadas por estado
   function renderTasks(data){
     try {
       if(!Array.isArray(data) || !data.length){ 
@@ -128,7 +138,8 @@ $(document).ready(function(){
     }
   }
 
-  // ----------------- FORMULARIO -----------------
+  // ================== FORMULARIO ==================
+  // Crear o editar tarea
  $('#taskForm').on('submit', function(e){
   e.preventDefault();
   try {
@@ -139,16 +150,18 @@ $(document).ready(function(){
       fecha_limite: $('#fecha_limite').val()
     };
 
+    // Validaciones rápidas
     if(!payload.titulo){ showAlert('El título es obligatorio','warning'); return; }
     if(!payload.descripcion){ showAlert('La descripción es obligatoria','warning'); return; }
     if(!payload.fecha_limite){ showAlert('La fecha límite es obligatoria','warning'); return; }
 
+    // Si hay id → editar, si no → crear
     let action = 'create';
     if(id){ 
       payload.id = id; 
-      action = 'update'; // ✅ no incluimos estado
+      action = 'update'; 
     } else {
-      payload.estado = 'pendiente'; // solo al crear
+      payload.estado = 'pendiente'; 
     }
 
     $.ajax({
@@ -171,13 +184,14 @@ $(document).ready(function(){
   }
 });
 
-
+  // ================== EDITAR DESDE BOTÓN ==================
   $('#tasks').on('click','.btn-edit', function(){
     const id=$(this).data('id');
     if(!id) return;
     $.get(apiUrl,{action:'get',id:id}).done(res=>{
       if(!res.success || !res.data){ showAlert('No se encontró la tarea','danger'); return; }
       const t=res.data;
+      // Relleno el formulario con los datos de la tarea
       $('#taskId').val(t.id||''); 
       $('#titulo').val(t.titulo||''); 
       $('#descripcion').val(t.descripcion||'');
@@ -187,7 +201,8 @@ $(document).ready(function(){
     }).fail(()=>showAlert('Error al obtener tarea','danger'));
   });
 
-  // ----------------- BOTONES DINÁMICOS -----------------
+  // ================== CAMBIOS DE ESTADO ==================
+  // Función genérica para cambiar estado de una tarea
   function updateTaskStatus(id, nuevoEstado, mensaje){
     if(!id) return;
     $.get(apiUrl, { action: 'get', id: id })
@@ -213,10 +228,12 @@ $(document).ready(function(){
       }).fail(()=> showAlert('Error al obtener tarea','danger'));
   }
 
+  // Botones que llaman a updateTaskStatus
   $('#tasks').on('click','.btn-revision', function(){ updateTaskStatus($(this).data('id'), 'en revision', 'Tarea enviada a revisión'); });
   $('#tasks').on('click','.btn-ok', function(){ updateTaskStatus($(this).data('id'), 'completada', 'Tarea marcada como completada'); });
   $('#tasks').on('click','.btn-revocar', function(){ updateTaskStatus($(this).data('id'), 'pendiente', 'Tarea revocada a pendiente'); });
 
+  // ================== ELIMINAR ==================
   $('#tasks').on('click','.btn-delete', function(){
     const id=$(this).data('id');
     if(!id) return;
@@ -232,9 +249,11 @@ $(document).ready(function(){
     }).fail(()=>showAlert('Error de red','danger'));
   });
 
+  // Resetear formulario (limpiar inputs)
   function resetForm(){ $('#taskId').val(''); $('#taskForm')[0].reset(); }
 
-  // ----------------- PERSONALIZACIÓN -----------------
+  // ================== PERSONALIZACIÓN ==================
+  // Colores configurables (se guardan en localStorage)
   const colores = [
     {var:'--color-fondo', id:'#colorFondo'},
     {var:'--color-texto', id:'#colorTexto'},
@@ -247,6 +266,7 @@ $(document).ready(function(){
     {var:'--color-completada', id:'#colorCompletada'}
   ];
 
+  // Aplico los colores guardados
   colores.forEach(c=>{
     const saved=localStorage.getItem(c.var);
     if(saved) document.documentElement.style.setProperty(c.var,saved);
@@ -256,7 +276,10 @@ $(document).ready(function(){
     });
   });
 
+  // Mostrar/ocultar panel de colores
   $('#toggleThemePanel').click(()=> $('#themePanel').slideToggle());
+
+  // Resetear colores a los valores por defecto
   $('#resetColors').click(()=>{ 
     colores.forEach(c=>{
       const defaultColor=$(c.id).attr('value');
@@ -266,7 +289,8 @@ $(document).ready(function(){
     });
   });
 
-  // ----------------- BUSCADOR -----------------
+  // ================== BUSCADOR ==================
+  // Filtrar tareas según lo que escriba en el input
   $('#searchTask').on('input', function(){
     try {
       const term = ($(this).val() || "").toLowerCase();
@@ -284,6 +308,7 @@ $(document).ready(function(){
     }
   });
 
-  // ----------------- INICIO -----------------
+  // ================== INICIO ==================
+  // Apenas carga la página → pido las tareas
   fetchTasks();
-});
+}); 

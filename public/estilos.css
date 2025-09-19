@@ -1,4 +1,5 @@
 :root {
+  /* Colores configurables del tema */
   --color-fondo: #ffffff;
   --color-header: #0d6efd;
   --color-footer: #212529;
@@ -10,29 +11,29 @@
   --color-completada: #198754;
 }
 
-/* General */
+/* ================== GENERAL ================== */
 body {
-  background-color: var(--color-fondo);
-  color: var(--color-texto);
+  background-color: var(--color-fondo);  /* color fondo general */
+  color: var(--color-texto);             /* color texto general */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
 }
 
 header {
-  background-color: var(--color-header);
+  background-color: var(--color-header); /* color header */
   color: #fff;
   padding: 1rem 0.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* sombrita */
 }
 
 footer {
-  background-color: var(--color-footer);
+  background-color: var(--color-footer); /* color footer */
   color: #fff;
   padding: 2rem 0.5rem;
 }
 
-/* Tareas */
+/* ================== TAREAS ================== */
 #tasks {
   margin-top: 2rem;
 }
@@ -43,12 +44,12 @@ footer {
 }
 
 #tasks .tarea-card {
-  margin: 0; /* se controlará con gap */
+  margin: 0; /* uso gap en su lugar */
 }
 
 .tarea-card {
-  border-left: 6px solid var(--color-principal);
-  background-color: hsla(0, 0%, 100%, 0.848); /* Fondo más claro para completadas */
+  border-left: 6px solid var(--color-principal); /* línea izquierda */
+  background-color: hsla(0, 0%, 100%, 0.848);    /* fondo base */
   color: var(--color-texto);
   border-radius: 1rem;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -57,26 +58,29 @@ footer {
 }
 
 .tarea-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-3px); /* efecto hover */
 }
 
+/* Colores según estado */
 .tarea-pendiente {
- border-left-color: var(--color-pendiente);
-  background-color: #f4f1e6; /* Fondo más claro para completadas */
-  opacity: 0.95;}
-
-.tarea-en-revision {
- border-left-color: var(--color-en-revision);
-  background-color: #7fadfcd8; /* Fondo más claro para completadas */
-  opacity: 0.95;}
-
-.tarea-completada {
-  border-left-color: var(--color-completada);
-  background-color: #e6f4ea; /* Fondo más claro para completadas */
+  border-left-color: var(--color-pendiente);
+  background-color: #f4f1e6;
   opacity: 0.95;
 }
 
-/* Botones */
+.tarea-en-revision {
+  border-left-color: var(--color-en-revision);
+  background-color: #7fadfcd8;
+  opacity: 0.95;
+}
+
+.tarea-completada {
+  border-left-color: var(--color-completada);
+  background-color: #e6f4ea;
+  opacity: 0.95;
+}
+
+/* ================== BOTONES ================== */
 .btn-primary {
   background-color: var(--color-boton);
   border-color: var(--color-boton);
@@ -84,11 +88,13 @@ footer {
 }
 
 .btn-primary:hover {
+  /* OJO: darken() no funciona en CSS puro, solo en SASS.
+     Para que funcione en CSS tendrías que poner un color más oscuro directo */
   background-color: darken(var(--color-boton), 10%);
   border-color: darken(var(--color-boton), 10%);
 }
 
-/* Animaciones */
+/* ================== ANIMACIONES ================== */
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }
@@ -98,7 +104,7 @@ footer {
   to { opacity: 1; }
 }
 
-/* Personalización panel */
+/* ================== PANEL DE PERSONALIZACIÓN ================== */
 #themePanel .form-control-color {
   width: 100%;
   height: 2.5rem;

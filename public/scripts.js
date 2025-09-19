@@ -33,6 +33,7 @@ $(document).ready(function(){
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id}">Editar</button>
               <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id}">Eliminar</button>
+              <button class="btn btn-sm btn-outline-primary btn-ok" data-id="${t.id}">Completada</button>
               <div class="ms-auto"><span class="badge bg-secondary">${t.estado}</span></div>
             </div>
           </div>
@@ -74,11 +75,55 @@ $(document).ready(function(){
     $.get(apiUrl,{action:'get',id:id}).done(res=>{
       if(!res.success){ showAlert('No se encontró la tarea','danger'); return; }
       const t=res.data;
-      $('#taskId').val(t.id); $('#titulo').val(t.titulo); $('#descripcion').val(t.descripcion);
-      $('#estado').val(t.estado); $('#fecha_limite').val(t.fecha_limite);
+      $('#taskId').val(t.id); 
+      $('#titulo').val(t.titulo); 
+      $('#descripcion').val(t.descripcion);
+      $('#estado').val(t.estado); 
+      $('#fecha_limite').val(t.fecha_limite);
       $('html,body').animate({scrollTop:0},400);
     }).fail(()=>showAlert('Error al obtener tarea','danger'));
   });
+
+// ----------------- BOTÓN COMPLETADA -----------------
+$('#tasks').on('click','.btn-ok', function(){
+  const id = $(this).data('id');
+
+  // Primero obtenemos los datos actuales de la tarea
+  $.get(apiUrl, { action: 'get', id: id })
+   .done(res => {
+      if(!res.success){ 
+        showAlert('No se encontró la tarea','danger'); 
+        return; 
+      }
+
+      const t = res.data;
+
+      // Payload completo para actualizar
+      const payload = {
+        id: id,
+        titulo: t.titulo,               // obligatorio
+        descripcion: t.descripcion || '',
+        fecha_limite: t.fecha_limite || null,
+        estado: 'completada'
+      };
+
+      $.ajax({
+        url: apiUrl+'?action=update',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload)
+      }).done(res2 => {
+        if(res2.success){
+          showAlert('Tarea marcada como completada','success');
+          fetchTasks(); // refresca la lista
+        } else {
+          showAlert(res2.error || 'Error al actualizar tarea','danger');
+        }
+      }).fail(()=> showAlert('Error de red','danger'));
+
+   }).fail(()=> showAlert('Error al obtener tarea','danger'));
+});
+
 
   $('#tasks').on('click','.btn-delete', function(){
     if(!confirm('¿Eliminar esta tarea?')) return;
@@ -109,7 +154,10 @@ $(document).ready(function(){
     {var:'--color-completada', id:'#colorCompletada'}
   ];
 
-  function cambiarColor(variable,color){ document.documentElement.style.setProperty(variable,color); localStorage.setItem(variable,color); }
+  function cambiarColor(variable,color){ 
+    document.documentElement.style.setProperty(variable,color); 
+    localStorage.setItem(variable,color); 
+  }
 
   colores.forEach(c=>{
     const saved=localStorage.getItem(c.var);

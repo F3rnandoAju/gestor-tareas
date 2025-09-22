@@ -48,24 +48,26 @@ $(document).ready(function(){
   }
 
   // ================== RENDER UNA TAREA ==================
-  function renderCard(t){
-    try {
-      if(!t || typeof t !== "object") return "";
+// ================== RENDER UNA TAREA ==================
+function renderCard(t){
+  try {
+    if(!t || typeof t !== "object") return "";
 
-      const estado = t.estado ? t.estado.toLowerCase() : "pendiente";
-      const estadoClass = estado==='pendiente' ? 'tarea-pendiente' :
-                          estado==='en revision' ? 'tarea-en-revision' :
-                          'tarea-completada';
+    const estado = t.estado ? t.estado.toLowerCase() : "pendiente";
+    const estadoClass = estado==='pendiente' ? 'tarea-pendiente' :
+                        estado==='en revision' ? 'tarea-en-revision' :
+                        'tarea-completada';
 
-      const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${escapeHtml(t.fecha_limite)}</small>` : '';
+    const fecha = t.fecha_limite ? `<small class="text-muted">Límite: ${escapeHtml(t.fecha_limite)}</small>` : '';
 
-      // Botones que aparecen según el estado
-      let botones = '';
-      const hoy = new Date();
-      const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
-      const limitePasado = fechaLimite && fechaLimite < hoy;
+    let botones = '';
+    const hoy = new Date();
+    const fechaLimite = t.fecha_limite ? new Date(t.fecha_limite) : null;
+    const limitePasado = fechaLimite && fechaLimite < hoy;
 
-      if(estado === 'pendiente' && !limitePasado){
+    if(userRole === "admin"){
+      // --- ADMIN ---
+      if(estado === 'pendiente' ){
         botones = `
           <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${t.id || ''}">Editar</button>
           <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id || ''}">Eliminar</button>
@@ -76,33 +78,45 @@ $(document).ready(function(){
           <button class="btn btn-sm btn-outline-success btn-ok" data-id="${t.id || ''}">Completada</button>
           <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id || ''}">Revocar</button>
         `;
-      }else if(estado === 'completada'){
+      } else if(estado === 'completada'){
         botones = `
-                   <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id || ''}">Eliminar</button>
-
+          <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${t.id || ''}">Eliminar</button>
         `;
       }
+    } else {
+      // --- USER ---
+      if(estado === 'pendiente' && !limitePasado){
+        botones = `
+          <button class="btn btn-sm btn-outline-warning btn-revision" data-id="${t.id || ''}">Mandar a Revisión</button>
+        `;
+      } else if(estado === 'en revision'){
+        botones = `
+          <button class="btn btn-sm btn-outline-secondary btn-revocar" data-id="${t.id || ''}">Seguir Editando</button>
+        `;
+      }
+      // completadas → nada
+    }
 
-      return `
-        <div class="col-12 col-md-4 mb-4">
-          <div class="card tarea-card ${estadoClass} p-2 fade-in">
-            <div class="card-body">
-              <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
-              <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
-              <p>${fecha}</p>
-              <div class="d-flex gap-2">
-                ${botones}
-                <div class="ms-auto"><span class="badge bg-secondary">${escapeHtml(estado)}</span></div>
-              </div>
+    return `
+      <div class="col-12 col-md-4 mb-4">
+        <div class="card tarea-card ${estadoClass} p-2 fade-in">
+          <div class="card-body">
+            <h5 class="card-title">${escapeHtml(t.titulo)}</h5>
+            <p class="card-text">${escapeHtml(t.descripcion||'')}</p>
+            <p>${fecha}</p>
+            <div class="d-flex gap-2">
+              ${botones}
+              <div class="ms-auto"><span class="badge bg-secondary">${escapeHtml(estado)}</span></div>
             </div>
           </div>
         </div>
-      `;
-    } catch(e) {
-      console.error("Error renderizando tarjeta:", e);
-      return "";
-    }
+      </div>
+    `;
+  } catch(e) {
+    console.error("Error renderizando tarjeta:", e);
+    return "";
   }
+}
 
   // ================== RENDER GENERAL ==================
   // Pinta todas las tareas separadas por estado

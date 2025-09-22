@@ -1,3 +1,17 @@
+<?php
+session_start();
+
+// Si no hay usuario logueado, redirige al login
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Guardamos el usuario y el rol desde la sesión
+$nombre = $_SESSION['user']; 
+$rol = $_SESSION['role'];
+?>
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -31,12 +45,13 @@
 
       <!-- Botón para abrir panel de colores + crear nueva tarea -->
       <div class="d-flex align-items-center">
+<span class="me-3 fw-semibold" style="color:black;">
+  👤 <?= htmlspecialchars($nombre) ?> (<?= htmlspecialchars($rol) ?>)
+</span>
         <button id="toggleThemePanel" class="btn btn-outline-secondary btn-sm me-2">
           🎨 Personalizar
         </button>
-        <a href="#" class="btn btn-primary btn-sm">
-          🚀 Nueva Tarea
-        </a>
+        <a href="logout.php" class="btn btn-danger btn-sm">🔒 Cerrar sesión</a>
       </div>
     </div>
   </header>
@@ -80,7 +95,6 @@
 
 
   <!-- ================= FORMULARIO DE TAREAS ================= -->
-  <!-- Form para crear/editar tareas -->
   <div class="container py-4">
     <div class="card shadow-lg border-0 rounded-4">
       <div class="card-header bg-primary text-white rounded-top-4">
@@ -212,6 +226,12 @@
   <!-- Librerías externas + mi scripts.js (toda la lógica) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Aquí definimos el rol del usuario para usar en JS -->
+  <script>
+    const userRole = "<?= $_SESSION['role'] ?? 'user' ?>";
+  </script>
+
   <script src="scripts.js"></script>
 </body>
 </html>
